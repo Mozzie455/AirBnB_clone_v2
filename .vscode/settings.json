@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "/home/joshu/AirBnB_clone_v2/models/place.py"
+    ],
+    "python.languageServer": "Pylance",
+}

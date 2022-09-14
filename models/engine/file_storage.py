@@ -17,7 +17,7 @@ class FileStorage:
                     mydictictionary[key] = self.__objects[key]
             return mydictictionary
         else:
-            return FileStorage.__objects
+            return self.__objects
 
     def delete(self, obj=None):
         """ deletes an object """
