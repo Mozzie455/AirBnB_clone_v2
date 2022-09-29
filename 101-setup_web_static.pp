@@ -1,78 +1,46 @@
 # 5. Puppet for setup
-exec { 'exec_0':
-  command => 'sudo sudo apt-get update -y',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Update bash':
+  command  => 'sudo apt-get -y update',
+  provider => shell
 }
-
-exec { 'exec_1':
-  require => Exec['exec_0'],
-  command => 'sudo apt-get install nginx -y',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Install NGINX':
+  command  => 'sudo apt-get -y install nginx',
+  provider => shell,
+  require  => Exec['Update bash']
 }
-
-exec { 'exec_2':
-  require => Exec['exec_1'],
-  command => 'sudo mkdir -p /data/web_static/shared/',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Create shared path':
+  command  => 'sudo mkdir -p /data/web_static/shared/',
+  provider => shell,
+  require  => Exec['Install NGINX']
 }
-
-exec { 'exec_3':
-  require => Exec['exec_2'],
-  command => 'sudo mkdir -p /data/web_static/releases/test/',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Create test path':
+  command  => 'sudo mkdir -p /data/web_static/releases/test/',
+  provider => shell,
+  require  => Exec['Create shared path']
 }
-
-exec { 'exec_4':
-  require => Exec['exec_3'],
-  command => 'sudo touch /data/web_static/releases/test/index.html',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Adding fake HTML':
+  command  => 'echo "FakeHTML" | sudo tee /data/web_static/releases/test/index.html',
+  provider => shell,
+  require  => Exec['Create test path'],
+  returns  => [0, 1]
 }
-
-exec { 'exec_5':
-  require => Exec['exec_4'],
-  command => 'echo "Holberton School" | sudo tee /data/web_static/releases/test/index.html >/dev/null',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
+exec { 'Symbolic link':
+  command  => 'sudo ln -sf /data/web_static/releases/test/ /data/web_static/current',
+  provider => shell,
+  require  => Exec['Adding fake HTML']
 }
-
-exec { 'exec_6':
-  require => Exec['exec_5'],
-  command => 'rm -rf /data/web_static/current',
-  path    => ['/usr/bin', '/bin', '/usr/sbin'],
-  returns => [0,1]
+exec { 'Permissions':
+  command  => 'sudo chown -R ubuntu:ubuntu /data/',
+  provider => shell,
+  require  => Exec['Symbolic link']
 }
-
-
-exec { 'exec_7':
-  require => Exec['exec_6'],
-  command => 'sudo ln -sf /data/web_static/releases/test/ /data/web_static/current',
-  path    => ['/usr/bin', '/bin', '/usr/sbin'],
-  returns => [0,1]
+exec { 'Adding location':
+  command  => 'sudo sed -i "29i\\\n\tlocation \/hbnb_static\/ {\n\t\talias \/data\/web_static\/current\/;\n\t\tautoindex off;\n\t}" /etc/nginx/sites-available/default',
+  provider => shell,
+  require  => Exec['Permissions']
 }
-
-exec { 'exec_8':
-  require => Exec['exec_7'],
-  command => 'sudo chown -R ubuntu:ubuntu /data/',
-  path    => ['/usr/bin', '/bin', '/usr/sbin'],
-  returns => [0,1]
-}
-
-exec { 'exec_9':
-  require     => Exec['exec_8'],
-  environment => ['C=\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t\tautoindex off;\n\t}\n'],
-  command     => 'sudo sed -i "38i $C" /etc/nginx/sites-available/default',
-  path        => ['/usr/bin', '/bin'],
-  returns     => [0,1]
-}
-
-exec { 'exec_10':
-  require => Exec['exec_9'],
-  command => 'sudo service nginx restart',
-  path    => ['/usr/bin', '/bin', '/usr/sbin'],
-  returns => [0,1]
+exec { 'Restart nginx':
+  command  => 'sudo service nginx restart',
+  provider => shell,
+  require  => Exec['Adding location']
 }
