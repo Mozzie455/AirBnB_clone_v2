@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 """ Script that runs a Flask app """
 
-from flask import Flask, escape, render_template
+from flask import Flask, render_template
+from markupsafe import escape
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 

@@ -24,5 +24,6 @@ def states_id(id):
     state = storage.all('State')
     return render_template('9-states.html', state=state, id=id)
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

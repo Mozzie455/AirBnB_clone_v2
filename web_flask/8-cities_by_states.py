@@ -17,5 +17,6 @@ def city():
     state = storage.all('State')
     return render_template('8-cities_by_states.html', state=state)
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
